@@ -32,6 +32,8 @@ const resultsMessage = document.getElementById('results-message');
 const resultsBreakdown = document.getElementById('results-breakdown');
 const restartBtn = document.getElementById('restart-btn');
 const shareBtn = document.getElementById('share-btn');
+const shareNative = document.getElementById('share-native');
+const sharePlatforms = document.getElementById('share-platforms');
 const loadingMsg = document.getElementById('loading-msg');
 
 function switchScreen(show) {
@@ -246,29 +248,51 @@ nextBtn.addEventListener('click', () => {
     }
 });
 
-shareBtn.addEventListener('click', async () => {
+function getShareText() {
     const total = questions.length;
     const emoji = score === total ? '🏆' : score >= total * 0.8 ? '🔥' : score >= total * 0.6 ? '👏' : '🚇';
     const bars = questions.map(q =>
         q.userAnswer && q.userAnswer.id === q.correctLine.id ? '🟢' : '🔴'
     ).join('');
-    const text = `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://tubesoundquiz.com/`;
+    return `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://tubesoundquiz.com/`;
+}
 
-    if (navigator.share) {
-        try {
-            await navigator.share({ text });
-            if (window.posthog) posthog.capture('quiz_shared', { method: 'native', score });
-            return;
-        } catch (e) {}
+// Show native share on mobile, platform buttons on desktop
+if (navigator.share) {
+    shareNative.style.display = 'flex';
+} else {
+    sharePlatforms.style.display = 'flex';
+}
+
+shareBtn.addEventListener('click', async () => {
+    try {
+        await navigator.share({ text: getShareText() });
+        if (window.posthog) posthog.capture('quiz_shared', { method: 'native', score });
+    } catch (e) {}
+});
+
+sharePlatforms.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-platform]');
+    if (!btn) return;
+    const platform = btn.dataset.platform;
+    const text = getShareText();
+    const url = 'https://tubesoundquiz.com/';
+    const encoded = encodeURIComponent(text);
+
+    if (platform === 'x') {
+        window.open(`https://x.com/intent/tweet?text=${encoded}`, '_blank');
+    } else if (platform === 'whatsapp') {
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    } else if (platform === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encoded}`, '_blank');
+    } else if (platform === 'reddit') {
+        window.open(`https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent('Tube Sound Quiz - Can you identify London Underground lines by sound?')}`, '_blank');
+    } else if (platform === 'copy') {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 2000);
     }
-    await navigator.clipboard.writeText(text);
-    if (window.posthog) posthog.capture('quiz_shared', { method: 'clipboard', score });
-    shareBtn.textContent = 'Copied!';
-    shareBtn.classList.add('copied');
-    setTimeout(() => {
-        shareBtn.textContent = 'Share Result';
-        shareBtn.classList.remove('copied');
-    }, 2000);
+    if (window.posthog) posthog.capture('quiz_shared', { method: platform, score });
 });
 
 restartBtn.addEventListener('click', () => {

@@ -383,6 +383,40 @@ h2 {
     background: #fde8e8;
 }
 
+/* Share platforms */
+.share-platforms {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.share-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #e0e0e0;
+    background: white;
+    color: #1d1d1b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.share-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.share-icon[data-platform="x"]:hover { background: #000; color: white; border-color: #000; }
+.share-icon[data-platform="whatsapp"]:hover { background: #25D366; color: white; border-color: #25D366; }
+.share-icon[data-platform="facebook"]:hover { background: #1877F2; color: white; border-color: #1877F2; }
+.share-icon[data-platform="reddit"]:hover { background: #FF4500; color: white; border-color: #FF4500; }
+.share-icon[data-platform="copy"]:hover { background: var(--tfl-blue); color: white; border-color: var(--tfl-blue); }
+.share-icon[data-platform="copy"].copied { background: #00782A; color: white; border-color: #00782A; }
+
 /* Results actions */
 .results-actions {
     display: flex;
