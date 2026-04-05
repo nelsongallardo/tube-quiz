@@ -916,7 +916,7 @@ shareBtn.addEventListener('click', async () => {
     const bars = questions.map(q =>
         q.userAnswer && q.userAnswer.id === q.correctLine.id ? '🟢' : '🔴'
     ).join('');
-    const text = `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://nelsongallardo.github.io/tube-quiz/`;
+    const text = `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://tubesoundquiz.com/`;
 
     if (navigator.share) {
         try {
