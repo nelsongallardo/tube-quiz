@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Sound Quiz - Guess the London Underground Line</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Johnston+ITC:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="roundel">
+                <div class="roundel-bar">TUBE QUIZ</div>
+            </div>
+            <h1>Guess the Tube Line</h1>
+            <p class="subtitle">Each London Underground line has its own distinctive sound. Can you tell them apart?</p>
+            <button id="start-btn" class="btn btn-primary">Start Quiz</button>
+            <p class="hint">10 questions &bull; Listen &amp; guess</p>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div class="quiz-info">
+                    <span id="question-num">Question 1/10</span>
+                    <span id="score-display">Score: 0</span>
+                </div>
+            </div>
+
+            <div class="quiz-body">
+                <h2>Which line is this?</h2>
+                <button id="play-btn" class="btn-play" aria-label="Play sound">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="23" stroke="currentColor" stroke-width="2"/>
+                        <path d="M19 15L35 24L19 33V15Z" fill="currentColor"/>
+                    </svg>
+                    <span id="play-label">Play Sound</span>
+                </button>
+
+                <div id="options" class="options"></div>
+
+                <div id="feedback" class="feedback hidden">
+                    <div id="feedback-icon"></div>
+                    <p id="feedback-text"></p>
+                    <p id="feedback-detail"></p>
+                    <button id="next-btn" class="btn btn-primary">Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <h1 id="results-title"></h1>
+            <div class="score-circle">
+                <span id="final-score"></span>
+                <span class="score-label">out of 10</span>
+            </div>
+            <p id="results-message"></p>
+            <div id="results-breakdown" class="results-breakdown"></div>
+            <button id="restart-btn" class="btn btn-primary">Play Again</button>
+        </div>
+    </div>
+
+    <script src="tube-sounds.js"></script>
+    <script src="quiz.js"></script>
+</body>
+</html>
