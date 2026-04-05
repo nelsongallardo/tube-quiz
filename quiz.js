@@ -123,6 +123,12 @@ function handleAnswer(selectedLine, btn) {
     q.userAnswer = selectedLine;
 
     if (correct) score++;
+    if (window.posthog) posthog.capture('question_answered', {
+        question: currentQuestion + 1,
+        correct_line: q.correctLine.name,
+        selected_line: selectedLine.name,
+        correct,
+    });
 
     // Highlight buttons
     const buttons = optionsContainer.querySelectorAll('.option-btn');
@@ -155,6 +161,7 @@ function showResults() {
     switchScreen(resultsScreen);
 
     finalScore.textContent = score;
+    if (window.posthog) posthog.capture('quiz_completed', { score, total: questions.length });
     progressFill.style.width = '100%';
 
     const total = questions.length;
@@ -223,6 +230,7 @@ startBtn.addEventListener('click', () => {
     score = 0;
     switchScreen(quizScreen);
     renderQuestion();
+    if (window.posthog) posthog.capture('quiz_started');
 });
 
 playBtn.addEventListener('click', playSound);
@@ -248,10 +256,12 @@ shareBtn.addEventListener('click', async () => {
     if (navigator.share) {
         try {
             await navigator.share({ text });
+            if (window.posthog) posthog.capture('quiz_shared', { method: 'native', score });
             return;
         } catch (e) {}
     }
     await navigator.clipboard.writeText(text);
+    if (window.posthog) posthog.capture('quiz_shared', { method: 'clipboard', score });
     shareBtn.textContent = 'Copied!';
     shareBtn.classList.add('copied');
     setTimeout(() => {
