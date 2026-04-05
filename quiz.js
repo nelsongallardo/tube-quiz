@@ -8,6 +8,7 @@ let score = 0;
 let questions = [];
 let answered = false;
 let playing = false;
+let availableLines = []; // only lines with real audio files
 
 // DOM elements
 const startScreen = document.getElementById('start-screen');
@@ -30,6 +31,7 @@ const finalScore = document.getElementById('final-score');
 const resultsMessage = document.getElementById('results-message');
 const resultsBreakdown = document.getElementById('results-breakdown');
 const restartBtn = document.getElementById('restart-btn');
+const loadingMsg = document.getElementById('loading-msg');
 
 function switchScreen(show) {
     [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove('active'));
@@ -46,10 +48,12 @@ function shuffle(arr) {
 }
 
 function generateQuestions() {
-    const shuffledLines = shuffle(TUBE_LINES);
-    const selectedLines = shuffledLines.slice(0, TOTAL_QUESTIONS);
+    const playableLines = TUBE_LINES.filter(l => availableLines.includes(l.id));
+    const numQuestions = Math.min(TOTAL_QUESTIONS, playableLines.length);
+    const selectedLines = shuffle(playableLines).slice(0, numQuestions);
 
     return selectedLines.map(correctLine => {
+        // Wrong options can include lines without audio (they're just labels)
         const wrongOptions = shuffle(
             TUBE_LINES.filter(l => l.id !== correctLine.id)
         ).slice(0, OPTIONS_PER_QUESTION - 1);
@@ -69,9 +73,9 @@ function renderQuestion() {
     answered = false;
     playing = false;
 
-    questionNum.textContent = `Question ${currentQuestion + 1}/${TOTAL_QUESTIONS}`;
+    questionNum.textContent = `Question ${currentQuestion + 1}/${questions.length}`;
     scoreDisplay.textContent = `Score: ${score}`;
-    progressFill.style.width = `${((currentQuestion) / TOTAL_QUESTIONS) * 100}%`;
+    progressFill.style.width = `${((currentQuestion) / questions.length) * 100}%`;
 
     playBtn.classList.remove('playing');
     playLabel.textContent = 'Play Sound';
@@ -98,7 +102,11 @@ async function playSound() {
     playLabel.textContent = 'Playing...';
 
     const q = questions[currentQuestion];
-    await soundEngine.play(q.correctLine.id, 4);
+    try {
+        await soundEngine.play(q.correctLine.id, 6);
+    } catch (e) {
+        playLabel.textContent = 'Error loading audio';
+    }
 
     playing = false;
     playBtn.classList.remove('playing');
@@ -136,7 +144,7 @@ function handleAnswer(selectedLine, btn) {
 
     scoreDisplay.textContent = `Score: ${score}`;
 
-    const isLast = currentQuestion === TOTAL_QUESTIONS - 1;
+    const isLast = currentQuestion === questions.length - 1;
     nextBtn.textContent = isLast ? 'See Results' : 'Next Question';
 
     feedback.classList.remove('hidden');
@@ -148,22 +156,26 @@ function showResults() {
     finalScore.textContent = score;
     progressFill.style.width = '100%';
 
-    if (score === 10) {
+    const total = questions.length;
+    if (score === total) {
         resultsTitle.textContent = 'Perfect Score!';
         resultsMessage.textContent = 'You really know your tubes! Are you a train driver?';
-    } else if (score >= 8) {
+    } else if (score >= total * 0.8) {
         resultsTitle.textContent = 'Excellent!';
         resultsMessage.textContent = 'You clearly spend a lot of time on the Underground.';
-    } else if (score >= 6) {
+    } else if (score >= total * 0.6) {
         resultsTitle.textContent = 'Not Bad!';
         resultsMessage.textContent = 'A solid commuter effort. A few more journeys and you\'ll nail it.';
-    } else if (score >= 4) {
+    } else if (score >= total * 0.4) {
         resultsTitle.textContent = 'Room to Improve';
         resultsMessage.textContent = 'You know some lines but might want to ride a few more.';
     } else {
         resultsTitle.textContent = 'Tourist Level';
         resultsMessage.textContent = 'Maybe stick to the bus for now? Try again!';
     }
+
+    // Update score label
+    document.querySelector('.score-label').textContent = `out of ${total}`;
 
     // Breakdown
     resultsBreakdown.innerHTML = '';
@@ -181,6 +193,28 @@ function showResults() {
     });
 }
 
+// Initialise: check which sounds are available
+async function init() {
+    loadingMsg.textContent = 'Checking for sound files...';
+    availableLines = await soundEngine.preload();
+
+    if (availableLines.length < 3) {
+        loadingMsg.innerHTML = `
+            <strong>No sound files found!</strong><br><br>
+            Add MP3 recordings to the <code>sounds/</code> folder.<br>
+            Name them by line: <code>bakerloo.mp3</code>, <code>central.mp3</code>, etc.<br><br>
+            See <strong>SOUNDS.md</strong> for where to download free recordings.
+        `;
+        startBtn.style.display = 'none';
+        return;
+    }
+
+    const numQ = Math.min(TOTAL_QUESTIONS, availableLines.length);
+    loadingMsg.style.display = 'none';
+    startBtn.style.display = '';
+    document.querySelector('.hint').textContent = `${numQ} questions \u2022 Listen & guess`;
+}
+
 // Event listeners
 startBtn.addEventListener('click', () => {
     questions = generateQuestions();
@@ -195,7 +229,7 @@ playBtn.addEventListener('click', playSound);
 nextBtn.addEventListener('click', () => {
     soundEngine.stop();
     currentQuestion++;
-    if (currentQuestion >= TOTAL_QUESTIONS) {
+    if (currentQuestion >= questions.length) {
         showResults();
     } else {
         renderQuestion();
@@ -209,3 +243,5 @@ restartBtn.addEventListener('click', () => {
     switchScreen(quizScreen);
     renderQuestion();
 });
+
+init();
