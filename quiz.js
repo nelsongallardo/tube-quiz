@@ -155,6 +155,7 @@ function handleAnswer(selectedLine, btn) {
     nextBtn.textContent = isLast ? 'See Results' : 'Next Question';
 
     feedback.classList.remove('hidden');
+    setTimeout(() => feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
 }
 
 function showResults() {
