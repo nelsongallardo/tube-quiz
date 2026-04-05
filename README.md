@@ -11,7 +11,7 @@ All recordings are from [Freesound.org](https://freesound.org) under Creative Co
 | Line | Recording | Author | License |
 |------|-----------|--------|---------|
 | Bakerloo | [London Underground: Bakerloo line ambience](https://freesound.org/people/Kalou/sounds/343141/) | Kalou | CC BY 4.0 |
-| Central | [London Underground: Central line ambience](https://freesound.org/people/Kalou/sounds/343139/) | Kalou | CC BY 4.0 |
+| Central | [Tube Central Line](https://freesound.org/people/barredowl/sounds/18782/) | barredowl | CC BY 3.0 |
 | Circle | [London Underground: Circle line ambience](https://freesound.org/people/Kalou/sounds/343145/) | Kalou | CC BY 4.0 |
 | District | [London Underground: Evening District Line journey](https://freesound.org/people/kwahmah_02/sounds/265283/) | kwahmah_02 | CC BY 3.0 |
 | Jubilee | [Jubilee line recording](https://freesound.org/people/JoeDinesSound/sounds/341275/) | JoeDinesSound | CC BY 3.0 |
