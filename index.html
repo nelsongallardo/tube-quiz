@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tube Sound Quiz - Guess the London Underground Line</title>
+    <meta name="description" content="Can you identify London Underground lines just by their sound? Take the quiz and find out!">
+    <meta property="og:title" content="Tube Sound Quiz">
+    <meta property="og:description" content="Can you identify London Underground lines just by their sound? 10 questions, 10 lines. How well do you know the Tube?">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nelsongallardo.github.io/tube-quiz/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tube Sound Quiz">
+    <meta name="twitter:description" content="Can you identify London Underground lines just by their sound? Take the quiz!">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Johnston+ITC:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -64,7 +72,10 @@
             </div>
             <p id="results-message"></p>
             <div id="results-breakdown" class="results-breakdown"></div>
-            <button id="restart-btn" class="btn btn-primary">Play Again</button>
+            <div class="results-actions">
+                <button id="share-btn" class="btn btn-share">Share Result</button>
+                <button id="restart-btn" class="btn btn-primary">Play Again</button>
+            </div>
         </div>
     </div>
 

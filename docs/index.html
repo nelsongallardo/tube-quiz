@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tube Sound Quiz - Guess the London Underground Line</title>
+    <meta name="description" content="Can you identify London Underground lines just by their sound? Take the quiz and find out!">
+    <meta property="og:title" content="Tube Sound Quiz">
+    <meta property="og:description" content="Can you identify London Underground lines just by their sound? 10 questions, 10 lines. How well do you know the Tube?">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nelsongallardo.github.io/tube-quiz/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tube Sound Quiz">
+    <meta name="twitter:description" content="Can you identify London Underground lines just by their sound? Take the quiz!">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -392,6 +400,29 @@ h2 {
     background: #fde8e8;
 }
 
+/* Results actions */
+.results-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-share {
+    background: #1d9bf0;
+    color: white;
+}
+
+.btn-share:hover {
+    background: #1a8cd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 155, 240, 0.3);
+}
+
+.btn-share.copied {
+    background: #00782A;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
     #app {
@@ -673,6 +704,7 @@ const finalScore = document.getElementById('final-score');
 const resultsMessage = document.getElementById('results-message');
 const resultsBreakdown = document.getElementById('results-breakdown');
 const restartBtn = document.getElementById('restart-btn');
+const shareBtn = document.getElementById('share-btn');
 const loadingMsg = document.getElementById('loading-msg');
 
 function switchScreen(show) {
@@ -876,6 +908,29 @@ nextBtn.addEventListener('click', () => {
     } else {
         renderQuestion();
     }
+});
+
+shareBtn.addEventListener('click', async () => {
+    const total = questions.length;
+    const emoji = score === total ? '🏆' : score >= total * 0.8 ? '🔥' : score >= total * 0.6 ? '👏' : '🚇';
+    const bars = questions.map(q =>
+        q.userAnswer && q.userAnswer.id === q.correctLine.id ? '🟢' : '🔴'
+    ).join('');
+    const text = `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://nelsongallardo.github.io/tube-quiz/`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ text });
+            return;
+        } catch (e) {}
+    }
+    await navigator.clipboard.writeText(text);
+    shareBtn.textContent = 'Copied!';
+    shareBtn.classList.add('copied');
+    setTimeout(() => {
+        shareBtn.textContent = 'Share Result';
+        shareBtn.classList.remove('copied');
+    }, 2000);
 });
 
 restartBtn.addEventListener('click', () => {

@@ -383,6 +383,29 @@ h2 {
     background: #fde8e8;
 }
 
+/* Results actions */
+.results-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-share {
+    background: #1d9bf0;
+    color: white;
+}
+
+.btn-share:hover {
+    background: #1a8cd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 155, 240, 0.3);
+}
+
+.btn-share.copied {
+    background: #00782A;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
     #app {

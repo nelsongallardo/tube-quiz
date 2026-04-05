@@ -31,6 +31,7 @@ const finalScore = document.getElementById('final-score');
 const resultsMessage = document.getElementById('results-message');
 const resultsBreakdown = document.getElementById('results-breakdown');
 const restartBtn = document.getElementById('restart-btn');
+const shareBtn = document.getElementById('share-btn');
 const loadingMsg = document.getElementById('loading-msg');
 
 function switchScreen(show) {
@@ -234,6 +235,29 @@ nextBtn.addEventListener('click', () => {
     } else {
         renderQuestion();
     }
+});
+
+shareBtn.addEventListener('click', async () => {
+    const total = questions.length;
+    const emoji = score === total ? '🏆' : score >= total * 0.8 ? '🔥' : score >= total * 0.6 ? '👏' : '🚇';
+    const bars = questions.map(q =>
+        q.userAnswer && q.userAnswer.id === q.correctLine.id ? '🟢' : '🔴'
+    ).join('');
+    const text = `${emoji} I got ${score}/${total} on the Tube Sound Quiz!\n${bars}\nCan you identify London Underground lines by sound?\nhttps://nelsongallardo.github.io/tube-quiz/`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ text });
+            return;
+        } catch (e) {}
+    }
+    await navigator.clipboard.writeText(text);
+    shareBtn.textContent = 'Copied!';
+    shareBtn.classList.add('copied');
+    setTimeout(() => {
+        shareBtn.textContent = 'Share Result';
+        shareBtn.classList.remove('copied');
+    }, 2000);
 });
 
 restartBtn.addEventListener('click', () => {
