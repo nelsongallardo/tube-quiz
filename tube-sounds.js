@@ -9,14 +9,12 @@
  *   - Central:       ermine - "Central Line, mind the doors" (60485)
  *   - Circle:        Kalou - "London Underground: Circle line ambience" (343145)
  *   - District:      kwahmah_02 - "Evening District Line journey" (327943)
- *   - Hammersmith:   innov8ting - via Circle/H&C shared S-stock recording
  *   - Jubilee:       Kalou - "London Underground: Jubilee line ambience" (343144)
- *   - Metropolitan:  kwahmah_02 - "Baker Street to Piccadilly Circus" (267697)
+ *   - Metropolitan:  Kalou - "London Underground: Metropolitan line ambience" (343143)
  *   - Northern:      ERH - "Bank to Camden Town via Northern Line" (56639)
- *   - Piccadilly:    kwahmah_02 - "Piccadilly Circus station" (327944)
+ *   - Piccadilly:    robkubicki - "London Underground - Piccadilly Line - On train" (337663)
  *   - Victoria:      Emanuele_Correani - "Inside Victoria Line train" (332777)
  *   - Elizabeth:     (record your own - newest line, limited free recordings)
- *   - Waterloo:      doubletrigger - "1996 Stock Jubilee/Waterloo" (100953)
  *
  * See SOUNDS.md for download instructions.
  */
@@ -46,13 +44,6 @@ const TUBE_LINES = [
         name: 'District',
         color: '#00782A',
         description: 'Moderate rumble, mixed tunnel and open sections — S-stock trains',
-    },
-    {
-        id: 'hammersmith',
-        name: 'Hammersmith & City',
-        color: '#F3A9BB',
-        textColor: '#1d1d1b',
-        description: 'Light, open sound — shares S-stock but shallower sections',
     },
     {
         id: 'jubilee',
@@ -90,13 +81,6 @@ const TUBE_LINES = [
         name: 'Elizabeth',
         color: '#6950A1',
         description: 'Quiet modern glide with gentle acceleration — brand new Aventra trains',
-    },
-    {
-        id: 'waterloo',
-        name: 'Waterloo & City',
-        color: '#95CDBA',
-        textColor: '#1d1d1b',
-        description: 'Short, enclosed echo with 1992 stock motor — tiny two-station line',
     },
 ];
 
