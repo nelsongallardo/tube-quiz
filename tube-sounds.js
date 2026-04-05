@@ -113,19 +113,18 @@ class TubeSoundEngine {
      * Returns a list of line IDs that have audio files.
      */
     async preload() {
-        const available = [];
-        for (const line of TUBE_LINES) {
+        const checks = TUBE_LINES.map(async (line) => {
             try {
                 const resp = await fetch(`sounds/${line.id}.mp3`, { method: 'HEAD' });
                 if (resp.ok) {
-                    available.push(line.id);
                     this.loaded[line.id] = true;
+                    return line.id;
                 }
-            } catch (e) {
-                // file not found, skip this line
-            }
-        }
-        return available;
+            } catch (e) {}
+            return null;
+        });
+        const results = await Promise.all(checks);
+        return results.filter(Boolean);
     }
 
     stop() {
@@ -137,41 +136,30 @@ class TubeSoundEngine {
     }
 
     /**
-     * Play a clip from the line's sound file.
-     * Picks a random segment from the recording for variety.
+     * Play the line's sound file from the start.
+     * Clips are already trimmed to ~15 seconds.
      */
-    play(lineId, duration) {
+    play(lineId) {
         this.stop();
-        const dur = duration || this.clipDuration;
 
         return new Promise((resolve, reject) => {
             const audio = new Audio(`sounds/${lineId}.mp3`);
             this.audio = audio;
 
-            audio.addEventListener('loadedmetadata', () => {
-                // Pick a random start point, avoiding the very start/end
-                const maxStart = Math.max(0, audio.duration - dur - 1);
-                const start = maxStart > 2 ? 2 + Math.random() * (maxStart - 2) : 0;
-                audio.currentTime = start;
-                audio.play();
+            audio.addEventListener('canplaythrough', () => {
+                audio.play().catch(reject);
+            }, { once: true });
 
-                // Stop after duration
-                const timer = setTimeout(() => {
-                    audio.pause();
-                    this.audio = null;
-                    resolve();
-                }, dur * 1000);
-
-                audio.addEventListener('ended', () => {
-                    clearTimeout(timer);
-                    this.audio = null;
-                    resolve();
-                });
-            });
+            audio.addEventListener('ended', () => {
+                this.audio = null;
+                resolve();
+            }, { once: true });
 
             audio.addEventListener('error', () => {
                 reject(new Error(`Could not load sound for ${lineId}`));
-            });
+            }, { once: true });
+
+            audio.load();
         });
     }
 }

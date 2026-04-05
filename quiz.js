@@ -103,7 +103,7 @@ async function playSound() {
 
     const q = questions[currentQuestion];
     try {
-        await soundEngine.play(q.correctLine.id, 6);
+        await soundEngine.play(q.correctLine.id);
     } catch (e) {
         playLabel.textContent = 'Error loading audio';
     }
