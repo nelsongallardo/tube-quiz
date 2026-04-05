@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Sound Quiz - Guess the London Underground Line</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --tfl-blue: #003688; --tfl-red: #E32017;
+    --bg: #f4f4f4; --card-bg: #ffffff; --text: #1d1d1b; --text-muted: #6b6b6b;
+}
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+#app { width: 100%; max-width: 520px; padding: 24px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.screen { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.roundel { position: relative; width: 160px; height: 160px; margin-bottom: 24px; }
+.roundel::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 18px solid var(--tfl-red); }
+.roundel-bar { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; background: var(--tfl-blue); color: white; text-align: center; font-weight: 700; font-size: 20px; letter-spacing: 2px; padding: 10px 0; z-index: 1; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+h2 { font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; }
+.subtitle { color: var(--text-muted); text-align: center; max-width: 360px; line-height: 1.5; margin-bottom: 32px; }
+.hint { color: var(--text-muted); font-size: 14px; margin-top: 16px; }
+.btn { border: none; border-radius: 8px; font-size: 16px; font-weight: 600; padding: 14px 32px; cursor: pointer; transition: all 0.15s ease; font-family: inherit; }
+.btn-primary { background: var(--tfl-blue); color: white; }
+.btn-primary:hover { background: #004aad; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 54, 136, 0.3); }
+.btn-primary:active { transform: translateY(0); }
+.btn-play { display: flex; flex-direction: column; align-items: center; gap: 8px; background: none; border: none; color: var(--tfl-blue); cursor: pointer; padding: 16px; margin-bottom: 24px; transition: all 0.15s ease; font-family: inherit; font-size: 14px; font-weight: 600; }
+.btn-play:hover { color: #004aad; transform: scale(1.05); }
+.btn-play.playing { color: var(--tfl-red); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.quiz-header { width: 100%; margin-bottom: 32px; }
+.progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: var(--tfl-blue); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+.quiz-info { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); font-weight: 600; }
+.quiz-body { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 20px; }
+.option-btn { position: relative; border: 2px solid #e0e0e0; border-radius: 10px; padding: 14px 16px; background: white; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; text-align: left; transition: all 0.15s ease; display: flex; align-items: center; gap: 10px; }
+.option-btn:hover:not(:disabled) { border-color: var(--tfl-blue); background: #f0f5ff; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.option-btn .line-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.option-btn:disabled { cursor: default; opacity: 0.6; }
+.option-btn.correct { border-color: #00782A; background: #e8f5ec; opacity: 1 !important; }
+.option-btn.wrong { border-color: var(--tfl-red); background: #fde8e8; opacity: 1 !important; }
+.feedback { text-align: center; width: 100%; padding: 20px; border-radius: 12px; background: white; border: 1px solid #e0e0e0; animation: fadeIn 0.3s ease; }
+.feedback.hidden { display: none; }
+#feedback-icon { font-size: 36px; margin-bottom: 8px; }
+#feedback-text { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+#feedback-detail { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+.score-circle { width: 140px; height: 140px; border-radius: 50%; border: 6px solid var(--tfl-blue); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 24px 0; }
+#final-score { font-size: 48px; font-weight: 700; color: var(--tfl-blue); line-height: 1; }
+.score-label { font-size: 14px; color: var(--text-muted); }
+#results-message { color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
+.results-breakdown { width: 100%; margin-bottom: 24px; }
+.result-row { display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; gap: 10px; }
+.result-row .line-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.result-row .line-name { flex: 1; font-weight: 600; }
+.result-row .result-icon { font-size: 16px; }
+.result-row.correct-row { background: #e8f5ec; }
+.result-row.wrong-row { background: #fde8e8; }
+@media (max-width: 480px) {
+    #app { padding: 16px; }
+    .options { grid-template-columns: 1fr; }
+    h1 { font-size: 24px; } h2 { font-size: 20px; }
+    .roundel { width: 120px; height: 120px; }
+    .roundel::before { border-width: 14px; }
+    .roundel-bar { width: 140px; font-size: 16px; padding: 8px 0; }
+}
+</style>
+</head>
+<body>
+    <div id="app">
+        <div id="start-screen" class="screen active">
+            <div class="roundel"><div class="roundel-bar">TUBE QUIZ</div></div>
+            <h1>Guess the Tube Line</h1>
+            <p class="subtitle">Each London Underground line has its own distinctive sound. Can you tell them apart?</p>
+            <button id="start-btn" class="btn btn-primary">Start Quiz</button>
+            <p class="hint">10 questions &bull; Listen &amp; guess</p>
+        </div>
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                <div class="quiz-info">
+                    <span id="question-num">Question 1/10</span>
+                    <span id="score-display">Score: 0</span>
+                </div>
+            </div>
+            <div class="quiz-body">
+                <h2>Which line is this?</h2>
+                <button id="play-btn" class="btn-play" aria-label="Play sound">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="23" stroke="currentColor" stroke-width="2"/>
+                        <path d="M19 15L35 24L19 33V15Z" fill="currentColor"/>
+                    </svg>
+                    <span id="play-label">Play Sound</span>
+                </button>
+                <div id="options" class="options"></div>
+                <div id="feedback" class="feedback hidden">
+                    <div id="feedback-icon"></div>
+                    <p id="feedback-text"></p>
+                    <p id="feedback-detail"></p>
+                    <button id="next-btn" class="btn btn-primary">Next Question</button>
+                </div>
+            </div>
+        </div>
+        <div id="results-screen" class="screen">
+            <h1 id="results-title"></h1>
+            <div class="score-circle">
+                <span id="final-score"></span>
+                <span class="score-label">out of 10</span>
+            </div>
+            <p id="results-message"></p>
+            <div id="results-breakdown" class="results-breakdown"></div>
+            <button id="restart-btn" class="btn btn-primary">Play Again</button>
+        </div>
+    </div>
+<script>
+const TUBE_LINES = [
+    { id: 'bakerloo', name: 'Bakerloo', color: '#B36305', description: 'Deep rumble with heavy rattle \u2014 oldest rolling stock on the network' },
+    { id: 'central', name: 'Central', color: '#E32017', description: 'High-pitched whine with strong tunnel resonance \u2014 deep level tube' },
+    { id: 'circle', name: 'Circle', color: '#FFD300', description: 'Open, airy sound with gentle S-stock hum \u2014 sub-surface line' },
+    { id: 'district', name: 'District', color: '#00782A', description: 'Moderate rumble, mixed tunnel and open sections \u2014 S-stock trains' },
+    { id: 'hammersmith', name: 'Hammersmith & City', color: '#F3A9BB', description: 'Light, open sound \u2014 shares S-stock but shallower sections' },
+    { id: 'jubilee', name: 'Jubilee', color: '#A0A5A9', description: 'Smooth modern hum with deep bass \u2014 1996 stock in deep tunnels' },
+    { id: 'metropolitan', name: 'Metropolitan', color: '#9B0056', description: 'Spacious echo with rhythmic clatter \u2014 sub-surface, longer distances' },
+    { id: 'northern', name: 'Northern', color: '#000000', description: 'Intense low roar with screech on curves \u2014 deepest sections' },
+    { id: 'piccadilly', name: 'Piccadilly', color: '#003688', description: 'Distinctive drone with tunnel amplification \u2014 deep level, 1973 stock' },
+    { id: 'victoria', name: 'Victoria', color: '#0098D4', description: 'Clean electric hum, fast acceleration whine \u2014 2009 stock, automated' },
+    { id: 'elizabeth', name: 'Elizabeth', color: '#6950A1', description: 'Quiet modern glide with gentle acceleration \u2014 brand new Aventra trains' },
+    { id: 'waterloo', name: 'Waterloo & City', color: '#95CDBA', description: 'Short, enclosed echo with 1992 stock motor \u2014 tiny two-station line' },
+];
+
+class TubeSoundEngine {
+    constructor() { this.audioCtx = null; this.currentNodes = []; }
+    init() {
+        if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+    }
+    stop() {
+        this.currentNodes.forEach(n => { try { if (n.stop) n.stop(); if (n.disconnect) n.disconnect(); } catch(e){} });
+        this.currentNodes = [];
+    }
+    play(lineId, duration = 4) {
+        this.init(); this.stop();
+        const ctx = this.audioCtx, now = ctx.currentTime, end = now + duration;
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(0, now);
+        masterGain.gain.linearRampToValueAtTime(0.5, now + 0.3);
+        masterGain.gain.setValueAtTime(0.5, end - 0.5);
+        masterGain.gain.linearRampToValueAtTime(0, end);
+        masterGain.connect(ctx.destination);
+        this.currentNodes.push(masterGain);
+        const synth = this['_' + lineId];
+        if (synth) synth.call(this, ctx, masterGain, now, end, duration);
+        return new Promise(resolve => setTimeout(resolve, duration * 1000));
+    }
+    _createNoise(ctx, duration) {
+        const sz = ctx.sampleRate * duration, buf = ctx.createBuffer(1, sz, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < sz; i++) d[i] = Math.random() * 2 - 1;
+        const s = ctx.createBufferSource(); s.buffer = buf; this.currentNodes.push(s); return s;
+    }
+    _createOsc(ctx, type, freq, end) {
+        const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq; o.start(); o.stop(end); this.currentNodes.push(o); return o;
+    }
+    _createFilter(ctx, type, freq, q) {
+        const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; if (q !== undefined) f.Q.value = q; this.currentNodes.push(f); return f;
+    }
+    _bakerloo(ctx, output, now, end, dur) {
+        const noise = this._createNoise(ctx, dur), lp = this._createFilter(ctx, 'lowpass', 200, 2), ng = ctx.createGain(); ng.gain.value = 0.7;
+        noise.connect(lp).connect(ng).connect(output); noise.start();
+        const ro = this._createOsc(ctx, 'square', 13, end), rg = ctx.createGain(); rg.gain.value = 0.25; ro.connect(rg).connect(ng.gain);
+        const m = this._createOsc(ctx, 'sawtooth', 55, end), mg = ctx.createGain(); mg.gain.value = 0.15;
+        const mf = this._createFilter(ctx, 'lowpass', 120, 3); m.connect(mf).connect(mg).connect(output);
+        const cn = this._createNoise(ctx, dur), cbp = this._createFilter(ctx, 'bandpass', 800, 5);
+        cn.connect(cbp).connect(output); cn.start();
+    }
+    _central(ctx, output, now, end, dur) {
+        const w = this._createOsc(ctx, 'sawtooth', 420, end), wg = ctx.createGain(); wg.gain.value = 0.08;
+        const wbp = this._createFilter(ctx, 'bandpass', 450, 8); w.connect(wbp).connect(wg).connect(output);
+        w.frequency.setValueAtTime(320, now); w.frequency.linearRampToValueAtTime(520, now + dur * 0.4);
+        w.frequency.setValueAtTime(520, now + dur * 0.6); w.frequency.linearRampToValueAtTime(380, end);
+        const n = this._createNoise(ctx, dur), res = this._createFilter(ctx, 'bandpass', 180, 4), rg = ctx.createGain(); rg.gain.value = 0.4;
+        n.connect(res).connect(rg).connect(output); n.start();
+        const r = this._createOsc(ctx, 'sine', 60, end), rg2 = ctx.createGain(); rg2.gain.value = 0.15; r.connect(rg2).connect(output);
+    }
+    _circle(ctx, output, now, end, dur) {
+        const h = this._createOsc(ctx, 'sine', 150, end), hg = ctx.createGain(); hg.gain.value = 0.12; h.connect(hg).connect(output);
+        const a = this._createNoise(ctx, dur), ahp = this._createFilter(ctx, 'highpass', 2000, 1), ag = ctx.createGain(); ag.gain.value = 0.15;
+        a.connect(ahp).connect(ag).connect(output); a.start();
+        const m = this._createOsc(ctx, 'triangle', 220, end), mg = ctx.createGain(); mg.gain.value = 0.06; m.connect(mg).connect(output);
+        const c = this._createOsc(ctx, 'sine', 5.5, end), cg = ctx.createGain(); cg.gain.value = 0.04; c.connect(cg).connect(output);
+    }
+    _district(ctx, output, now, end, dur) {
+        const n = this._createNoise(ctx, dur), lp = this._createFilter(ctx, 'lowpass', 350, 2), ng = ctx.createGain(); ng.gain.value = 0.3;
+        n.connect(lp).connect(ng).connect(output); n.start();
+        const m = this._createOsc(ctx, 'triangle', 185, end), mg = ctx.createGain(); mg.gain.value = 0.1; m.connect(mg).connect(output);
+        const jn = this._createNoise(ctx, dur), jbp = this._createFilter(ctx, 'bandpass', 600, 3), jg = ctx.createGain(); jg.gain.value = 0.06;
+        jn.connect(jbp).connect(jg).connect(output); jn.start();
+        const h2 = this._createOsc(ctx, 'sine', 370, end), h2g = ctx.createGain(); h2g.gain.value = 0.03; h2.connect(h2g).connect(output);
+    }
+    _hammersmith(ctx, output, now, end, dur) {
+        const a = this._createNoise(ctx, dur), ahp = this._createFilter(ctx, 'highpass', 2500, 0.8), ag = ctx.createGain(); ag.gain.value = 0.18;
+        a.connect(ahp).connect(ag).connect(output); a.start();
+        const h = this._createOsc(ctx, 'sine', 165, end), hg = ctx.createGain(); hg.gain.value = 0.08; h.connect(hg).connect(output);
+        const b = this._createOsc(ctx, 'sine', 880, end), bg = ctx.createGain(); bg.gain.value = 0.0; b.connect(bg).connect(output);
+        for (let t = 0.5; t < dur - 1; t += 1.8) {
+            bg.gain.setValueAtTime(0, now + t); bg.gain.linearRampToValueAtTime(0.04, now + t + 0.05); bg.gain.linearRampToValueAtTime(0, now + t + 0.15);
+        }
+        const r = this._createNoise(ctx, dur), rbp = this._createFilter(ctx, 'bandpass', 1200, 2), rg = ctx.createGain(); rg.gain.value = 0.06;
+        r.connect(rbp).connect(rg).connect(output); r.start();
+    }
+    _jubilee(ctx, output, now, end, dur) {
+        const bass = this._createOsc(ctx, 'sine', 45, end), bg = ctx.createGain(); bg.gain.value = 0.2; bass.connect(bg).connect(output);
+        const m = this._createOsc(ctx, 'sawtooth', 200, end), mbp = this._createFilter(ctx, 'bandpass', 280, 6), mg = ctx.createGain(); mg.gain.value = 0.07;
+        m.connect(mbp).connect(mg).connect(output);
+        m.frequency.setValueAtTime(180, now); m.frequency.linearRampToValueAtTime(340, now + dur * 0.5); m.frequency.linearRampToValueAtTime(260, end);
+        const w = this._createNoise(ctx, dur), wbp = this._createFilter(ctx, 'bandpass', 300, 1.5), wg = ctx.createGain(); wg.gain.value = 0.2;
+        w.connect(wbp).connect(wg).connect(output); w.start();
+        const r = this._createNoise(ctx, dur), rlp = this._createFilter(ctx, 'lowpass', 80, 2), rg = ctx.createGain(); rg.gain.value = 0.25;
+        r.connect(rlp).connect(rg).connect(output); r.start();
+    }
+    _metropolitan(ctx, output, now, end, dur) {
+        const n = this._createNoise(ctx, dur), lp = this._createFilter(ctx, 'lowpass', 400, 1), ng = ctx.createGain(); ng.gain.value = 0.2;
+        n.connect(lp).connect(ng).connect(output); n.start();
+        const c = this._createNoise(ctx, dur), cbp = this._createFilter(ctx, 'bandpass', 500, 4), cg = ctx.createGain(); cg.gain.value = 0;
+        c.connect(cbp).connect(cg).connect(output); c.start();
+        for (let t = 0; t < dur; t += 0.6) {
+            cg.gain.setValueAtTime(0.02, now + t); cg.gain.linearRampToValueAtTime(0.12, now + t + 0.05); cg.gain.linearRampToValueAtTime(0.02, now + t + 0.3);
+        }
+        const m = this._createOsc(ctx, 'triangle', 195, end), mg = ctx.createGain(); mg.gain.value = 0.08; m.connect(mg).connect(output);
+        const res = this._createOsc(ctx, 'sine', 110, end), rg = ctx.createGain(); rg.gain.value = 0.06; res.connect(rg).connect(output);
+    }
+    _northern(ctx, output, now, end, dur) {
+        const roar = this._createNoise(ctx, dur), rlp = this._createFilter(ctx, 'lowpass', 150, 3), rg = ctx.createGain(); rg.gain.value = 0.6;
+        roar.connect(rlp).connect(rg).connect(output); roar.start();
+        const s = this._createOsc(ctx, 'sawtooth', 1800, end), sbp = this._createFilter(ctx, 'bandpass', 2000, 12), sg = ctx.createGain(); sg.gain.value = 0;
+        s.connect(sbp).connect(sg).connect(output);
+        sg.gain.setValueAtTime(0, now + dur * 0.3); sg.gain.linearRampToValueAtTime(0.04, now + dur * 0.35); sg.gain.linearRampToValueAtTime(0, now + dur * 0.5);
+        sg.gain.setValueAtTime(0, now + dur * 0.65); sg.gain.linearRampToValueAtTime(0.03, now + dur * 0.7); sg.gain.linearRampToValueAtTime(0, now + dur * 0.8);
+        const res = this._createOsc(ctx, 'sine', 40, end), resg = ctx.createGain(); resg.gain.value = 0.18; res.connect(resg).connect(output);
+        const m = this._createOsc(ctx, 'sawtooth', 85, end), mlp = this._createFilter(ctx, 'lowpass', 200, 2), mg = ctx.createGain(); mg.gain.value = 0.1;
+        m.connect(mlp).connect(mg).connect(output);
+    }
+    _piccadilly(ctx, output, now, end, dur) {
+        const d = this._createOsc(ctx, 'sawtooth', 130, end), dbp = this._createFilter(ctx, 'bandpass', 160, 5), dg = ctx.createGain(); dg.gain.value = 0.12;
+        d.connect(dbp).connect(dg).connect(output);
+        const h2 = this._createOsc(ctx, 'sawtooth', 260, end), h2g = ctx.createGain(); h2g.gain.value = 0.05;
+        const h2bp = this._createFilter(ctx, 'bandpass', 280, 6); h2.connect(h2bp).connect(h2g).connect(output);
+        const t = this._createNoise(ctx, dur), tbp = this._createFilter(ctx, 'bandpass', 250, 3), tg = ctx.createGain(); tg.gain.value = 0.3;
+        t.connect(tbp).connect(tg).connect(output); t.start();
+        const r = this._createOsc(ctx, 'sine', 50, end), rgg = ctx.createGain(); rgg.gain.value = 0.12; r.connect(rgg).connect(output);
+        d.frequency.setValueAtTime(100, now); d.frequency.linearRampToValueAtTime(160, now + dur * 0.4);
+        d.frequency.setValueAtTime(160, end - dur * 0.3); d.frequency.linearRampToValueAtTime(110, end);
+    }
+    _victoria(ctx, output, now, end, dur) {
+        const w = this._createOsc(ctx, 'sine', 300, end), wg = ctx.createGain(); wg.gain.value = 0.1; w.connect(wg).connect(output);
+        w.frequency.setValueAtTime(200, now); w.frequency.exponentialRampToValueAtTime(600, now + dur * 0.3);
+        w.frequency.exponentialRampToValueAtTime(500, now + dur * 0.5);
+        w.frequency.setValueAtTime(500, end - dur * 0.3); w.frequency.exponentialRampToValueAtTime(250, end);
+        const h = this._createOsc(ctx, 'triangle', 120, end), hg = ctx.createGain(); hg.gain.value = 0.08; h.connect(hg).connect(output);
+        const t = this._createNoise(ctx, dur), tlp = this._createFilter(ctx, 'lowpass', 250, 1), tg = ctx.createGain(); tg.gain.value = 0.15;
+        t.connect(tlp).connect(tg).connect(output); t.start();
+        const igbt = this._createOsc(ctx, 'square', 700, end), ibp = this._createFilter(ctx, 'bandpass', 700, 15), ig = ctx.createGain(); ig.gain.value = 0.02;
+        igbt.connect(ibp).connect(ig).connect(output);
+        igbt.frequency.setValueAtTime(400, now); igbt.frequency.exponentialRampToValueAtTime(900, now + dur * 0.3);
+        igbt.frequency.setValueAtTime(900, now + dur * 0.5); igbt.frequency.exponentialRampToValueAtTime(500, end);
+    }
+    _elizabeth(ctx, output, now, end, dur) {
+        const m = this._createOsc(ctx, 'sine', 180, end), mg = ctx.createGain(); mg.gain.value = 0.06; m.connect(mg).connect(output);
+        m.frequency.setValueAtTime(140, now); m.frequency.linearRampToValueAtTime(220, now + dur * 0.5); m.frequency.linearRampToValueAtTime(180, end);
+        const a = this._createNoise(ctx, dur), ahp = this._createFilter(ctx, 'highpass', 3000, 0.5), ag = ctx.createGain(); ag.gain.value = 0.08;
+        a.connect(ahp).connect(ag).connect(output); a.start();
+        const h = this._createOsc(ctx, 'sine', 60, end), hg = ctx.createGain(); hg.gain.value = 0.07; h.connect(hg).connect(output);
+        const igbt = this._createOsc(ctx, 'triangle', 500, end), ig = ctx.createGain(); ig.gain.value = 0.03;
+        const ibp = this._createFilter(ctx, 'bandpass', 500, 10); igbt.connect(ibp).connect(ig).connect(output);
+        igbt.frequency.setValueAtTime(350, now); igbt.frequency.linearRampToValueAtTime(600, now + dur * 0.4); igbt.frequency.linearRampToValueAtTime(400, end);
+    }
+    _waterloo(ctx, output, now, end, dur) {
+        const n = this._createNoise(ctx, dur), lp = this._createFilter(ctx, 'lowpass', 280, 3), ng = ctx.createGain(); ng.gain.value = 0.35;
+        n.connect(lp).connect(ng).connect(output); n.start();
+        const r1 = this._createOsc(ctx, 'sine', 95, end), r1g = ctx.createGain(); r1g.gain.value = 0.15; r1.connect(r1g).connect(output);
+        const r2 = this._createOsc(ctx, 'sine', 190, end), r2g = ctx.createGain(); r2g.gain.value = 0.06; r2.connect(r2g).connect(output);
+        const m = this._createOsc(ctx, 'sawtooth', 350, end), mbp = this._createFilter(ctx, 'bandpass', 380, 7), mg = ctx.createGain(); mg.gain.value = 0.06;
+        m.connect(mbp).connect(mg).connect(output);
+        m.frequency.setValueAtTime(280, now); m.frequency.linearRampToValueAtTime(420, now + dur * 0.4); m.frequency.linearRampToValueAtTime(320, end);
+    }
+}
+
+const soundEngine = new TubeSoundEngine();
+const TOTAL_QUESTIONS = 10, OPTIONS_PER_QUESTION = 4;
+let currentQuestion = 0, score = 0, questions = [], answered = false, playing = false;
+
+const $ = id => document.getElementById(id);
+const startScreen = $('start-screen'), quizScreen = $('quiz-screen'), resultsScreen = $('results-screen');
+const startBtn = $('start-btn'), playBtn = $('play-btn'), playLabel = $('play-label');
+const optionsContainer = $('options'), feedback = $('feedback'), feedbackIcon = $('feedback-icon');
+const feedbackText = $('feedback-text'), feedbackDetail = $('feedback-detail'), nextBtn = $('next-btn');
+const questionNum = $('question-num'), scoreDisplay = $('score-display'), progressFill = $('progress-fill');
+const resultsTitle = $('results-title'), finalScore = $('final-score'), resultsMessage = $('results-message');
+const resultsBreakdown = $('results-breakdown'), restartBtn = $('restart-btn');
+
+function switchScreen(show) {
+    [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove('active'));
+    show.classList.add('active');
+}
+function shuffle(arr) {
+    const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a;
+}
+function generateQuestions() {
+    return shuffle(TUBE_LINES).slice(0, TOTAL_QUESTIONS).map(correctLine => ({
+        correctLine, options: shuffle([correctLine, ...shuffle(TUBE_LINES.filter(l => l.id !== correctLine.id)).slice(0, OPTIONS_PER_QUESTION - 1)]), userAnswer: null
+    }));
+}
+function renderQuestion() {
+    const q = questions[currentQuestion]; answered = false; playing = false;
+    questionNum.textContent = `Question ${currentQuestion + 1}/${TOTAL_QUESTIONS}`;
+    scoreDisplay.textContent = `Score: ${score}`;
+    progressFill.style.width = `${(currentQuestion / TOTAL_QUESTIONS) * 100}%`;
+    playBtn.classList.remove('playing'); playLabel.textContent = 'Play Sound';
+    feedback.classList.add('hidden'); optionsContainer.innerHTML = '';
+    q.options.forEach(line => {
+        const btn = document.createElement('button'); btn.className = 'option-btn';
+        btn.innerHTML = `<span class="line-dot" style="background:${line.color}"></span><span>${line.name}</span>`;
+        btn.addEventListener('click', () => handleAnswer(line, btn));
+        optionsContainer.appendChild(btn);
+    });
+}
+async function playSound() {
+    if (playing) return; playing = true;
+    playBtn.classList.add('playing'); playLabel.textContent = 'Playing...';
+    await soundEngine.play(questions[currentQuestion].correctLine.id, 4);
+    playing = false; playBtn.classList.remove('playing'); playLabel.textContent = 'Play Again';
+}
+function handleAnswer(selectedLine, btn) {
+    if (answered) return; answered = true;
+    const q = questions[currentQuestion], correct = selectedLine.id === q.correctLine.id;
+    q.userAnswer = selectedLine; if (correct) score++;
+    optionsContainer.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = true;
+        if (b.querySelector('span:last-child').textContent === q.correctLine.name) b.classList.add('correct');
+    });
+    if (!correct) btn.classList.add('wrong');
+    feedbackIcon.textContent = correct ? '\u2705' : '\u274C';
+    feedbackText.textContent = correct ? 'Correct!' : `It was the ${q.correctLine.name} line`;
+    feedbackDetail.textContent = q.correctLine.description;
+    scoreDisplay.textContent = `Score: ${score}`;
+    nextBtn.textContent = currentQuestion === TOTAL_QUESTIONS - 1 ? 'See Results' : 'Next Question';
+    feedback.classList.remove('hidden');
+}
+function showResults() {
+    switchScreen(resultsScreen); finalScore.textContent = score;
+    if (score === 10) { resultsTitle.textContent = 'Perfect Score!'; resultsMessage.textContent = 'You really know your tubes! Are you a train driver?'; }
+    else if (score >= 8) { resultsTitle.textContent = 'Excellent!'; resultsMessage.textContent = 'You clearly spend a lot of time on the Underground.'; }
+    else if (score >= 6) { resultsTitle.textContent = 'Not Bad!'; resultsMessage.textContent = "A solid commuter effort. A few more journeys and you'll nail it."; }
+    else if (score >= 4) { resultsTitle.textContent = 'Room to Improve'; resultsMessage.textContent = 'You know some lines but might want to ride a few more.'; }
+    else { resultsTitle.textContent = 'Tourist Level'; resultsMessage.textContent = 'Maybe stick to the bus for now? Try again!'; }
+    resultsBreakdown.innerHTML = '';
+    questions.forEach(q => {
+        const correct = q.userAnswer && q.userAnswer.id === q.correctLine.id;
+        const row = document.createElement('div'); row.className = `result-row ${correct ? 'correct-row' : 'wrong-row'}`;
+        row.innerHTML = `<span class="line-dot" style="background:${q.correctLine.color}"></span><span class="line-name">${q.correctLine.name}</span>${!correct && q.userAnswer ? `<span style="font-size:12px;color:#6b6b6b">You said: ${q.userAnswer.name}</span>` : ''}<span class="result-icon">${correct ? '\u2705' : '\u274C'}</span>`;
+        resultsBreakdown.appendChild(row);
+    });
+}
+startBtn.addEventListener('click', () => { questions = generateQuestions(); currentQuestion = 0; score = 0; switchScreen(quizScreen); renderQuestion(); });
+playBtn.addEventListener('click', playSound);
+nextBtn.addEventListener('click', () => { soundEngine.stop(); currentQuestion++; currentQuestion >= TOTAL_QUESTIONS ? showResults() : renderQuestion(); });
+restartBtn.addEventListener('click', () => { questions = generateQuestions(); currentQuestion = 0; score = 0; switchScreen(quizScreen); renderQuestion(); });
+</script>
+</body>
+</html>
