@@ -76,12 +76,6 @@ const TUBE_LINES = [
         color: '#0098D4',
         description: 'Clean electric hum, fast acceleration whine — 2009 stock, automated',
     },
-    {
-        id: 'elizabeth',
-        name: 'Elizabeth',
-        color: '#6950A1',
-        description: 'Quiet modern glide with gentle acceleration — brand new Aventra trains',
-    },
 ];
 
 class TubeSoundEngine {
