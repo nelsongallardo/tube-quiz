@@ -28,6 +28,7 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2672328374925042" crossorigin="anonymous"></script>
 <style>
 * {
     margin: 0;
@@ -452,6 +453,15 @@ h2 {
     background: #fde8e8;
 }
 
+/* Ad slot */
+.ad-slot {
+    width: 100%;
+    margin: 16px 0 24px;
+    min-height: 90px;
+    text-align: center;
+    overflow: hidden;
+}
+
 /* Share platforms */
 .share-platforms {
     display: flex;
@@ -601,6 +611,14 @@ h2 {
             </div>
             <p id="results-message"></p>
             <div id="results-breakdown" class="results-breakdown"></div>
+            <div class="ad-slot">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-2672328374925042"
+                     data-ad-slot="2740505133"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+            </div>
             <div id="share-native" class="results-actions" style="display:none">
                 <button id="share-btn" class="btn btn-share">Share Result</button>
             </div>
@@ -954,8 +972,18 @@ function handleAnswer(selectedLine, btn) {
     setTimeout(() => feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
 }
 
+let resultsAdPushed = false;
+function pushResultsAd() {
+    if (resultsAdPushed) return;
+    try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        resultsAdPushed = true;
+    } catch (e) {}
+}
+
 function showResults() {
     switchScreen(resultsScreen);
+    requestAnimationFrame(pushResultsAd);
 
     finalScore.textContent = score;
     if (window.posthog) posthog.capture('quiz_completed', { score, total: questions.length });

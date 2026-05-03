@@ -160,8 +160,18 @@ function handleAnswer(selectedLine, btn) {
     setTimeout(() => feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
 }
 
+let resultsAdPushed = false;
+function pushResultsAd() {
+    if (resultsAdPushed) return;
+    try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        resultsAdPushed = true;
+    } catch (e) {}
+}
+
 function showResults() {
     switchScreen(resultsScreen);
+    requestAnimationFrame(pushResultsAd);
 
     finalScore.textContent = score;
     if (window.posthog) posthog.capture('quiz_completed', { score, total: questions.length });
